@@ -34,6 +34,7 @@ form h1 {
 form p {
   font-size: 32px;
   text-decoration: underline;
+  cursor: pointer;
 }
 form button {
   padding: 10px 80px;
@@ -190,6 +191,9 @@ a {
 }
 .top_panel h1 {
   font-size: 48px;
+}
+.logout{
+  cursor: pointer;
 }
 
 /* CHAT PAGE - CHAT PANEL*/

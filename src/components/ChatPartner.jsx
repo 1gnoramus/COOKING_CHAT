@@ -1,8 +1,8 @@
-export function ChatPartner() {
+export function ChatPartner({ sender, message }) {
   return (
     <div className="chatPartner_cont">
-      <h1>Бабушка</h1>
-      <p>Добрый вечер!</p>
+      <h1>{sender}</h1>
+      <p>{message}</p>
     </div>
   );
 }
