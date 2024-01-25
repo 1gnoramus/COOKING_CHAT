@@ -1,7 +1,7 @@
-export function UserMessageBubble() {
+export function UserMessageBubble({ messageText }) {
   return (
     <div className="message_bubble from-user">
-      <p>Добрый вечер!</p>
+      <p>{messageText}</p>
     </div>
   );
 }

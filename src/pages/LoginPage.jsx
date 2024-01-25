@@ -7,7 +7,6 @@ export function LoginPage() {
   const navigate = useNavigate();
   let [emailInput, setemailInput] = useState("");
   let [passwordInput, setpasswordInput] = useState("");
-
   async function handleLogin(event) {
     event.preventDefault();
     try {

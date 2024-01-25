@@ -1,7 +1,7 @@
-export function PartnerMEssageBubble() {
+export function PartnerMEssageBubble({ messageText }) {
   return (
     <div className="message_bubble from-partner">
-      <p>Добрый вечер!</p>
+      <p>{messageText}</p>
     </div>
   );
 }
