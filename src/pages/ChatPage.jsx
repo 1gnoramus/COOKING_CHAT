@@ -18,26 +18,12 @@ import { useEffect, useState } from "react";
 
 export function ChatPage() {
   const navigate = useNavigate();
+  const db = getFirestore();
 
   let [newMessage, setNewMessage] = useState("");
   let [messagesArray, setMessagesArray] = useState([]);
-
-  let [selectedPartner, setSelectedPartner] = useState("Бабушка");
-  function handleChatSelection(partner) {
-    setSelectedPartner(partner);
-  }
-
-  const db = getFirestore();
-
-  async function sendNewMessage() {
-    let sender = auth.currentUser;
-    await addDoc(collection(db, "messages"), {
-      sender: sender.email,
-      message: newMessage,
-      receiver: selectedPartner,
-    });
-    setNewMessage("");
-  }
+  let [partnersArray, setPartnersArray] = useState([]);
+  let [selectedPartner, setSelectedPartner] = useState("");
 
   function handleLogOut() {
     signOut(auth)
@@ -48,10 +34,34 @@ export function ChatPage() {
         alert(e);
       });
   }
+  function handleChatSelection(partner) {
+    setSelectedPartner(partner);
+  }
+  async function sendNewMessage() {
+    let sender = auth.currentUser;
+    await addDoc(collection(db, "messages"), {
+      sender: sender.displayName,
+      message: newMessage,
+      receiver: selectedPartner,
+    });
+    setNewMessage("");
+  }
+  async function getAllUsers() {
+    const querySnapshot = await getDocs(collection(db, "users"));
+
+    const allUsersData = querySnapshot.docs.map((doc) => doc.data()); // [1,2,3]- все пользователи
+    const usersData = allUsersData.filter(
+      (doc) => doc.username != auth.currentUser.displayName
+    );
+    setPartnersArray(usersData);
+  }
+
   useEffect(() => {
     onSnapshot(collection(db, "messages"), (querySnapshot) => {
       const queryData = querySnapshot.docs.filter(
-        (doc) => doc.data().receiver == selectedPartner
+        (doc) =>
+          doc.data().receiver == selectedPartner ||
+          doc.data().sender == selectedPartner
       );
       const messagesData = queryData.map((doc) => ({
         id: doc.id,
@@ -59,6 +69,7 @@ export function ChatPage() {
       }));
       setMessagesArray(messagesData);
     });
+    getAllUsers();
   }, [selectedPartner]);
 
   return (
@@ -67,21 +78,16 @@ export function ChatPage() {
         <div className="sidebar_panel">
           <h1>Чаты</h1>
           <div className="chatPartners_list">
-            <ChatPartner
-              partner="Бабушка"
-              message="Добрый вечер!"
-              handleChatSelection={handleChatSelection}
-            ></ChatPartner>
-            <ChatPartner
-              partner="Дедушка"
-              message="Ты видел мои очки?"
-              handleChatSelection={handleChatSelection}
-            ></ChatPartner>
-            <ChatPartner
-              partner="Сестра"
-              message="Когда придешь домой?"
-              handleChatSelection={handleChatSelection}
-            ></ChatPartner>
+            {partnersArray.map((partner) => {
+              return (
+                <ChatPartner
+                  key={partner.email}
+                  partner={partner.username}
+                  message={partner.email}
+                  handleChatSelection={handleChatSelection}
+                ></ChatPartner>
+              );
+            })}
           </div>
         </div>
         <div className="top_panel">
@@ -93,23 +99,22 @@ export function ChatPage() {
         </div>
         <div className="chat_panel">
           {messagesArray.map((info) => {
-            if (
-              auth.currentUser &&
-              info.info.sender == auth.currentUser.email
-            ) {
-              return (
-                <UserMessageBubble
-                  key={info.id}
-                  messageText={info.info.message}
-                ></UserMessageBubble>
-              );
-            } else {
-              return (
-                <PartnerMEssageBubble
-                  key={info.id}
-                  messageText={info.info.message}
-                ></PartnerMEssageBubble>
-              );
+            if (auth.currentUser) {
+              if (info.info.sender == auth.currentUser.displayName) {
+                return (
+                  <UserMessageBubble
+                    key={info.id}
+                    messageText={info.info.message}
+                  ></UserMessageBubble>
+                );
+              } else if (info.info.receiver == auth.currentUser.displayName) {
+                return (
+                  <PartnerMEssageBubble
+                    key={info.id}
+                    messageText={info.info.message}
+                  ></PartnerMEssageBubble>
+                );
+              }
             }
           })}
         </div>
@@ -129,13 +134,6 @@ export function ChatPage() {
           >
             <img src={send} alt="" />
           </button>
-          {/* <button
-          // onClick={() => {
-          //   getMessages();
-          // }}
-          >
-            <img src={send} alt="" />
-          </button> */}
         </div>
       </div>
     </div>

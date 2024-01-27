@@ -1,4 +1,5 @@
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { addDoc, collection, getFirestore } from "firebase/firestore";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
@@ -6,17 +7,37 @@ import { auth } from "../firebase";
 export function RegistrationPage() {
   let [emailInput, setEmailInput] = useState("");
   let [passwordInput, setPasswordInput] = useState("");
+  let [usernameInput, setUsernameInput] = useState("");
   const navigate = useNavigate();
+  const db = getFirestore();
 
   async function handleRegistration(event) {
     event.preventDefault();
     try {
-      await createUserWithEmailAndPassword(auth, emailInput, passwordInput);
+      const authResult = await createUserWithEmailAndPassword(
+        auth,
+        emailInput,
+        passwordInput
+      );
+      await updateProfile(authResult.user, {
+        displayName: usernameInput,
+      });
+      await addUser();
       navigate("/chat");
     } catch {
       alert("Вы ввели данные неверно");
     }
   }
+
+  async function addUser() {
+    await addDoc(collection(db, "users"), {
+      email: emailInput,
+      username: usernameInput,
+    });
+  }
+
+  
+
   return (
     <div className="welcome_page">
       <div className="register_page_content">
@@ -28,6 +49,15 @@ export function RegistrationPage() {
         >
           <div className="circle_decor circle-yellow"></div>
           <h1>СОЗДАЙТЕ НОВЫЙ АККАУНТ</h1>
+          <input
+            type="text"
+            value={usernameInput}
+            onChange={(e) => {
+              setUsernameInput(e.target.value);
+            }}
+            placeholder="Введите Ваше имя"
+          />
+
           <input
             value={emailInput}
             onChange={(e) => {
