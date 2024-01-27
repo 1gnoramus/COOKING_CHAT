@@ -14,7 +14,7 @@ import {
   getFirestore,
   onSnapshot,
 } from "firebase/firestore";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function ChatPage() {
   const navigate = useNavigate();
@@ -48,17 +48,18 @@ export function ChatPage() {
         alert(e);
       });
   }
-
-  onSnapshot(collection(db, "messages"), (querySnapshot) => {
-    const queryData = querySnapshot.docs.filter(
-      (doc) => doc.data().receiver == selectedPartner
-    );
-    const messagesData = queryData.map((doc) => ({
-      id: doc.id,
-      info: doc.data(),
-    }));
-    setMessagesArray(messagesData);
-  });
+  useEffect(() => {
+    onSnapshot(collection(db, "messages"), (querySnapshot) => {
+      const queryData = querySnapshot.docs.filter(
+        (doc) => doc.data().receiver == selectedPartner
+      );
+      const messagesData = queryData.map((doc) => ({
+        id: doc.id,
+        info: doc.data(),
+      }));
+      setMessagesArray(messagesData);
+    });
+  }, [selectedPartner]);
 
   return (
     <div className="welcome_page">
