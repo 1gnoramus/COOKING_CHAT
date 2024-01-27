@@ -36,8 +36,6 @@ export function RegistrationPage() {
     });
   }
 
-  
-
   return (
     <div className="welcome_page">
       <div className="register_page_content">
